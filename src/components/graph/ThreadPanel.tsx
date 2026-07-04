@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import * as d3 from "d3";
 import type { DAGNode } from "../../utils/useGraphNetwork";
-import type { NodeData } from "../../types";
 import { timeFormatter } from "../../utils/time";
 const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
 
@@ -43,7 +42,7 @@ const CollapsibleText: React.FC<{ text: string }> = ({ text }) => {
 interface ThreadPanelProps {
   threadId: string | null;
   messages: DAGNode[];
-  nodeMap: Map<string, NodeData>;
+  nodeMap: Map<string, DAGNode>;
   onClose: () => void;
   onHoverMessage: (nodeId: string | null) => void;
 }
@@ -57,7 +56,7 @@ export const ThreadPanel: React.FC<ThreadPanelProps> = ({
   if (!threadId || messages.length === 0) return null;
 
   return (
-    <aside className="w-[480px] bg-white border-l border-slate-200 h-full flex flex-col shadow-2xl z-40 font-sans text-slate-800">
+    <aside className="w-[1200px] bg-white border-l border-slate-200 h-full flex flex-col shadow-2xl z-40 font-sans text-slate-800">
       <header className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="flex items-center space-x-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">

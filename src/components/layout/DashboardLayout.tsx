@@ -64,6 +64,7 @@ export const DashboardLayout: React.FC = () => {
               nodes={sortedNodes}
               edges={data.edges}
               trends={data.trends}
+              timeBounds={network.timeBounds}
               nodeMap={nodeMap}
               threadMap={threadMap}
               selectedThreadId={selectedThreadId}
