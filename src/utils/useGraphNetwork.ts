@@ -15,7 +15,7 @@ export const useGraphNetwork = (rawNodes: NodeData[], edges: EdgeData[]) => {
         nodeMap: new Map<string, DAGNode>(),
         threadMap: new Map<string, string>(),
         threads: new Map<string, DAGNode[]>(),
-        timeBounds: [0, 0],
+        timeBounds: [0, 0] as [number, number],
       };
     }
 
@@ -79,7 +79,7 @@ export const useGraphNetwork = (rawNodes: NodeData[], edges: EdgeData[]) => {
     const timeBounds = [
       getMs(rawNodes[0].timestamp),
       getMs(rawNodes[rawNodes.length - 1].timestamp),
-    ];
+    ] as [number, number];
 
     return {
       nodes: rawNodes,
