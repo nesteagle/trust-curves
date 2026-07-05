@@ -1,8 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
-import * as d3 from "d3";
 import type { DAGNode } from "../../utils/useGraphNetwork";
 import { timeFormatter } from "../../utils/time";
-const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+import { colorScale } from "../../utils/useColor";
 
 const CollapsibleText: React.FC<{ text: string }> = ({ text }) => {
   const [isExpanded, setIsExpanded] = useState(false);

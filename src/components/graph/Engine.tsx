@@ -3,6 +3,7 @@ import * as d3 from "d3";
 import type { NodeData, EdgeData, TrendPoint } from "../../types";
 import { getMs } from "../../utils/time";
 import type { DAGNode } from "../../utils/useGraphNetwork";
+import { colorScale } from "../../utils/useColor";
 
 interface CanvasEngineProps {
   width: number;
@@ -22,7 +23,6 @@ interface CanvasEngineProps {
 const bisectTime = d3.bisector<NodeData, number>((d) =>
   getMs(d.timestamp)
 ).left;
-const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
 
 const CONFIG = {
   MARGIN: { top: 20, right: 30, bottom: 40, left: 50 },
