@@ -1,8 +1,10 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import type { DAGNode } from "../../hooks/useGraphNetwork";
 import { CollapsibleText } from "../ui/CollapsibleText";
 import { EvaluationAuditModal } from "./Audit";
 import { ThreadMessage } from "./ThreadMessage";
+import { AGENT_ORDER } from "../../hooks/useColor";
+import { ChordDiagram, type ChordDiagramHandle } from "../chord/ChordDiagram";
 
 interface ThreadPanelProps {
   threadId: number | null;
@@ -27,6 +29,30 @@ export const ThreadPanel: React.FC<ThreadPanelProps> = ({
   const [selectedAuditNode, setSelectedAuditNode] = useState<DAGNode | null>(
     null
   );
+  const chordRef = useRef<ChordDiagramHandle>(null);
+  const [isChordExpanded, setIsChordExpanded] = useState(false);
+
+  const threadChord = useMemo(() => {
+    const present = new Set(messages.map((m) => m.agent));
+    const labels = AGENT_ORDER.filter((a) => present.has(a));
+    const index = new Map<string, number>(labels.map((a, i) => [a, i]));
+    const matrix = labels.map(() => labels.map(() => 0));
+    const byId = new Map<string, DAGNode>(messages.map((m) => [m.id, m]));
+
+    messages.forEach((m) => {
+      const s = index.get(m.agent);
+      if (s === undefined) return;
+      m.childIds.forEach((childId) => {
+        const child = byId.get(childId);
+        if (!child) return;
+        const t = index.get(child.agent);
+        if (t === undefined) return;
+        matrix[s][t] += 1;
+      });
+    });
+
+    return { labels, matrix };
+  }, [messages]);
 
   const summaryText = useMemo(() => {
     if (threadId == null || !threadSummary) return null;
@@ -96,6 +122,48 @@ export const ThreadPanel: React.FC<ThreadPanelProps> = ({
             />
           ))}
         </div>
+
+        {threadChord.labels.length > 1 && (
+          <div className="border-t border-slate-200 bg-slate-50/60 flex-shrink-0">
+            <button
+              onClick={() => setIsChordExpanded((v) => !v)}
+              className="w-full flex items-center justify-between px-6 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500 hover:text-slate-700 transition-colors"
+            >
+              <span>Reply Structure</span>
+              <svg
+                className={`w-3.5 h-3.5 transition-transform ${
+                  isChordExpanded ? "rotate-180" : ""
+                }`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </button>
+            {isChordExpanded && (
+              <div
+                className="px-6 pb-4"
+                onClick={() => chordRef.current?.clearPin()}
+              >
+                <ChordDiagram
+                  ref={chordRef}
+                  matrix={threadChord.matrix}
+                  labels={threadChord.labels}
+                  size={220}
+                  unit="reply"
+                  legendPosition="side"
+                  emptyMessage="No replies within this thread."
+                />
+              </div>
+            )}
+          </div>
+        )}
       </aside>
     </>
   );

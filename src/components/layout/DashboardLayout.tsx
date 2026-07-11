@@ -4,6 +4,7 @@ import { CanvasEngine } from "../graph/Engine";
 import { TooltipOverlay } from "../graph/Tooltip";
 import { ThreadPanel } from "../graph/ThreadPanel";
 import { WeightPanel } from "../graph/Weights";
+import { ChordPanel } from "../chord/ChordPanel";
 import type { NodeData } from "../../types";
 import * as d3 from "d3";
 
@@ -12,6 +13,7 @@ import { useSharedScoring } from "../../utils/scores";
 import { useEWMATrends } from "../../utils/trends";
 import { useContainerSize } from "../../hooks/useContainerSize";
 import { useActiveThread } from "../../hooks/useActiveThread";
+import { useTimeCompression } from "../../hooks/useTimeCompression";
 import type { DAGNode } from "../../hooks/useGraphNetwork";
 
 export const DashboardLayout: React.FC = () => {
@@ -21,7 +23,10 @@ export const DashboardLayout: React.FC = () => {
 
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [sidebarHoveredId, setSidebarHoveredId] = useState<string | null>(null);
+  const [isChordOpen, setIsChordOpen] = useState(false);
   const [containerRef, dimensions] = useContainerSize<HTMLDivElement>();
+
+  const timeCompression = useTimeCompression(sortedNodes);
 
   const {
     keys,
@@ -53,6 +58,7 @@ export const DashboardLayout: React.FC = () => {
 
   const handleNodeClick = (node: NodeData | null) => {
     setSelectedNodeId(node ? node.id : null);
+    if (node) setIsChordOpen(false);
   };
 
   const { activeNode, activeThreadId, activeMessages } = useActiveThread(
@@ -103,6 +109,15 @@ export const DashboardLayout: React.FC = () => {
               keys={keys}
               weights={weights}
               setWeights={setWeights}
+            />
+
+            <ChordPanel
+              isOpen={isChordOpen}
+              onToggle={() => setIsChordOpen((v) => !v)}
+              onClose={() => setIsChordOpen(false)}
+              timeBounds={network.timeBounds}
+              mainWidth={dimensions.width}
+              timeCompression={timeCompression}
             />
 
             {activeNode && (

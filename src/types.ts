@@ -28,3 +28,29 @@ export interface GraphPayload {
   edges: EdgeData[];
   trends: Record<string, TrendPoint[]>;
 }
+
+export interface AgentEdgeRecord {
+  source: string;
+  target: string;
+  message_id: string;
+  timestamp: string;
+}
+
+export interface AgentConnectionsPayload {
+  agents: string[];
+  labels: string[];
+  reply_matrix: number[][];
+  mention_matrix: number[][];
+  combined_matrix: number[][];
+  reply_edges: AgentEdgeRecord[];
+  mention_edges: AgentEdgeRecord[];
+  meta: {
+    total_messages: number;
+    resolved_reply_edges: number;
+    unresolved_messages: number;
+    mentioning_messages: number;
+    resolved_mention_edges: number;
+  };
+}
+
+export type ChordMode = "replies" | "mentions" | "both";

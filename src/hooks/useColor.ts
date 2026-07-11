@@ -1,6 +1,21 @@
 import * as d3 from "d3";
 import { useMemo } from "react";
-export const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+
+// Fixed so every view (timeline, chord diagrams) assigns the same color to
+// the same agent regardless of render order.
+export const AGENT_ORDER = [
+  "Legal-Agent",
+  "Platform-Trust-Agent",
+  "PR-Agent",
+  "Social-Manager-Agent",
+  "PR-Intern-Agent",
+  "Intern-Agent",
+  "Judge-Agent",
+];
+
+export const colorScale = d3
+  .scaleOrdinal(d3.schemeCategory10)
+  .domain(AGENT_ORDER);
 
 // diverging RdBu scale from ColorBrewer
 // https://colorbrewer2.org/#type=diverging&scheme=RdBu&n=5

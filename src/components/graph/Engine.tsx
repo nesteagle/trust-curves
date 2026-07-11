@@ -9,6 +9,7 @@ import {
   bisectTime,
 } from "../../utils/canvasConfig";
 import { useTimeCompression } from "../../hooks/useTimeCompression";
+import { setGraphTransform } from "../../utils/graphTransformStore";
 import { useCanvasScales } from "../../hooks/useCanvasScales";
 import { useNodeHitTest } from "../../hooks/useNodeHitTest";
 import {
@@ -242,6 +243,7 @@ export const CanvasEngine: React.FC<CanvasEngineProps> = ({
       .scaleExtent([1, CONFIG.ZOOM.MAX_SCALE])
       .on("zoom", (event) => {
         transformRef.current = event.transform;
+        setGraphTransform(event.transform);
         renderAxes(event.transform);
         drawFrame();
         window.dispatchEvent(
