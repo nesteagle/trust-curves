@@ -1,12 +1,15 @@
 import { createContext, useContext } from "react";
 import type React from "react";
 import type { GraphPayload, NodeData } from "../types";
-import { useGraphNetwork } from "../utils/useGraphNetwork";
+import { useGraphNetwork } from "../hooks/useGraphNetwork";
 
 export interface HoverState {
   node: NodeData | null;
   x: number;
   y: number;
+  scoreExternal: number | null;
+  scoreInternal: number | null;
+  deceptionDelta: number | null;
 }
 
 export interface FilterState {
@@ -15,11 +18,7 @@ export interface FilterState {
 
 export interface DataContextType {
   data: GraphPayload | null;
-  isLoading: boolean;
-  error: string | null;
   setData: (data: GraphPayload) => void;
-  setIsLoading: (loading: boolean) => void;
-  setError: (error: string | null) => void;
   network: ReturnType<typeof useGraphNetwork>;
 }
 

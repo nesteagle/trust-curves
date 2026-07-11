@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useCallback } from "react";
 import type { ReactNode } from "react";
-import type { GraphPayload } from "../types";
-import { useGraphNetwork } from "../utils/useGraphNetwork";
+import type { EdgeData, GraphPayload, NodeData } from "../types";
+import { useGraphNetwork } from "../hooks/useGraphNetwork";
 import {
   GraphDataContext,
   GraphFilterContext,
@@ -10,19 +10,34 @@ import {
   type FilterState,
 } from "./GraphContext";
 
+import rawPayload from "../data/data_eval.json";
+
 export const GraphProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const [data, setData] = useState<GraphPayload | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const [data, setData] = useState<GraphPayload | null>(() => {
+      return {
+        nodes: rawPayload.nodes as NodeData[],
+        edges: rawPayload.edges,
+        trends: rawPayload.trends,
+      };
+  });
 
-  const network = useGraphNetwork(data?.nodes || [], data?.edges || []);
+  const EMPTY_NODES: NodeData[] = [];
+  const EMPTY_EDGES: EdgeData[] = [];
+
+  const network = useGraphNetwork(
+    data?.nodes ?? EMPTY_NODES,
+    data?.edges ?? EMPTY_EDGES
+  );
 
   const [hoverState, setHoverState] = useState<HoverState>({
     node: null,
     x: 0,
     y: 0,
+    scoreExternal: null,
+    scoreInternal: null,
+    deceptionDelta: null,
   });
 
   const [filters, setFilters] = useState<FilterState>({ hiddenAgents: [] });
@@ -39,14 +54,10 @@ export const GraphProvider: React.FC<{ children: ReactNode }> = ({
   const dataValue = useMemo(
     () => ({
       data,
-      isLoading,
-      error,
       setData,
-      setIsLoading,
-      setError,
       network,
     }),
-    [data, isLoading, error, network]
+    [data, network]
   );
 
   const filterValue = useMemo(
