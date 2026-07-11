@@ -1,12 +1,16 @@
+export type ExplanationEntry = [reasoning: string, score: number];
+export type Explanations = Record<string, ExplanationEntry>;
+export type Weights = Record<string, number>;
+
 export interface NodeData {
   id: string;
   timestamp: string;
   agent: string;
-  scoreExternal: number;
-  scoreInternal: number | null;
-  deceptionDelta: number | null;
   content: string;
   reasoning: string | null;
+  explanationsExternal: Explanations | null;
+  explanationsInternal: Explanations | null;
+  threadId: number | null;
 }
 
 export interface EdgeData {
