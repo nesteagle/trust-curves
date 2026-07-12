@@ -1,13 +1,11 @@
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo } from "react";
 import type { ReactNode } from "react";
 import type { EdgeData, GraphPayload, NodeData } from "../types";
 import { useGraphNetwork } from "../hooks/useGraphNetwork";
 import {
   GraphDataContext,
-  GraphFilterContext,
   GraphHoverContext,
   type HoverState,
-  type FilterState,
 } from "./GraphContext";
 
 import rawPayload from "../data/data_eval.json";
@@ -16,11 +14,11 @@ export const GraphProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const [data, setData] = useState<GraphPayload | null>(() => {
-      return {
-        nodes: rawPayload.nodes as NodeData[],
-        edges: rawPayload.edges,
-        trends: rawPayload.trends,
-      };
+    return {
+      nodes: rawPayload.nodes as NodeData[],
+      edges: rawPayload.edges,
+      trends: rawPayload.trends,
+    };
   });
 
   const EMPTY_NODES: NodeData[] = [];
@@ -40,17 +38,6 @@ export const GraphProvider: React.FC<{ children: ReactNode }> = ({
     deceptionDelta: null,
   });
 
-  const [filters, setFilters] = useState<FilterState>({ hiddenAgents: [] });
-
-  const toggleAgentFilter = useCallback((agent: string) => {
-    setFilters((prev) => ({
-      ...prev,
-      hiddenAgents: prev.hiddenAgents.includes(agent)
-        ? prev.hiddenAgents.filter((a) => a !== agent)
-        : [...prev.hiddenAgents, agent],
-    }));
-  }, []);
-
   const dataValue = useMemo(
     () => ({
       data,
@@ -60,11 +47,6 @@ export const GraphProvider: React.FC<{ children: ReactNode }> = ({
     [data, network]
   );
 
-  const filterValue = useMemo(
-    () => ({ filters, setFilters, toggleAgentFilter }),
-    [filters, toggleAgentFilter]
-  );
-
   const hoverValue = useMemo(
     () => ({ hoverState, setHoverState }),
     [hoverState]
@@ -72,11 +54,9 @@ export const GraphProvider: React.FC<{ children: ReactNode }> = ({
 
   return (
     <GraphDataContext.Provider value={dataValue}>
-      <GraphFilterContext.Provider value={filterValue}>
-        <GraphHoverContext.Provider value={hoverValue}>
-          {children}
-        </GraphHoverContext.Provider>
-      </GraphFilterContext.Provider>
+      <GraphHoverContext.Provider value={hoverValue}>
+        {children}
+      </GraphHoverContext.Provider>
     </GraphDataContext.Provider>
   );
 };

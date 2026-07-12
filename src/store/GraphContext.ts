@@ -12,20 +12,11 @@ export interface HoverState {
   deceptionDelta: number | null;
 }
 
-export interface FilterState {
-  hiddenAgents: string[];
-}
 
 export interface DataContextType {
   data: GraphPayload | null;
   setData: (data: GraphPayload) => void;
   network: ReturnType<typeof useGraphNetwork>;
-}
-
-export interface FilterContextType {
-  filters: FilterState;
-  setFilters: React.Dispatch<React.SetStateAction<FilterState>>;
-  toggleAgentFilter: (agent: string) => void;
 }
 
 export interface HoverContextType {
@@ -36,9 +27,7 @@ export interface HoverContextType {
 export const GraphDataContext = createContext<DataContextType | undefined>(
   undefined
 );
-export const GraphFilterContext = createContext<FilterContextType | undefined>(
-  undefined
-);
+
 export const GraphHoverContext = createContext<HoverContextType | undefined>(
   undefined
 );
@@ -47,13 +36,6 @@ export const useGraphData = () => {
   const context = useContext(GraphDataContext);
   if (!context)
     throw new Error("useGraphData must be used within a GraphProvider");
-  return context;
-};
-
-export const useGraphFilters = () => {
-  const context = useContext(GraphFilterContext);
-  if (!context)
-    throw new Error("useGraphFilters must be used within a GraphProvider");
   return context;
 };
 

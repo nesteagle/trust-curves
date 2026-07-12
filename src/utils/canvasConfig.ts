@@ -10,11 +10,10 @@ export const CONFIG = {
   MARGIN: { top: 20, right: 30, bottom: 40, left: 50 },
   TICK_SPACING: 120,
   X_PAD_RATIO: 0.05,
-  OVERSCAN_NODES: 15,
-  HOVER_RADIUS: 20,
+  HOVER_RADIUS: 10,
   TIME: {
-    GAP_THRESHOLD_MS: 6 * 60 * 60 * 1000,
-    COLLAPSED_SPACE_MS: 0.25 * 60 * 60 * 1000,
+    GAP_THRESHOLD_MS: 6 * 60 * 60 * 1000, // 6 hour + gaps are collapsed
+    COLLAPSED_SPACE_MS: 0.25 * 60 * 60 * 1000, // collapsed space takes 1/4 hour or 15 minutes
   },
   EDGE: { MAX_BULGE: 50, BULGE_RATIO: 0.2 },
   OPACITY: {

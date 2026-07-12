@@ -14,7 +14,7 @@ export const useNodeHitTest = (
   baseScales: BaseScales,
   timeCompression: TimeCompression,
   getExternalScoreOrZero: (nodeId: string) => number,
-  transformRef: React.MutableRefObject<d3.ZoomTransform>
+  transformRef: React.RefObject<d3.ZoomTransform>
 ) => {
   return useCallback(
     (mouseX: number, mouseY: number): NodeData | null => {

@@ -138,8 +138,8 @@ export const CanvasEngine: React.FC<CanvasEngineProps> = ({
     const startIndex = bisectTime(nodes, timeCompression.toReal(minSimTime));
     const endIndex = bisectTime(nodes, timeCompression.toReal(maxSimTime));
     const visibleNodes = nodes.slice(
-      Math.max(0, startIndex - CONFIG.OVERSCAN_NODES),
-      endIndex + CONFIG.OVERSCAN_NODES
+      startIndex,
+      endIndex
     );
 
     let highlightNodeId = selectedNodeId;

@@ -167,7 +167,7 @@ export function useScoresMap(
 
 function useStableNodes(nodes: DAGNode[]): DAGNode[] {
   const key = nodes.map((n) => n.id).join(",");
-  const ref = useMemo(() => ({ key, nodes }), [key]);
+  const ref = useMemo(() => ({ key, nodes }), [key, nodes]);
   return ref.nodes;
 }
 
