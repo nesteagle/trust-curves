@@ -12,7 +12,7 @@ import { useSharedScoring } from "../../utils/scores";
 import { useEWMATrends } from "../../utils/trends";
 import { useContainerSize } from "../../hooks/useContainerSize";
 import { useActiveThread } from "../../hooks/useActiveThread";
-import type { DAGNode } from "../../hooks/useGraphNetwork";
+import { ChordDiagramPanel } from "../charts/ChordDiagram";
 
 export const DashboardLayout: React.FC = () => {
   const { data, network } = useGraphData();
@@ -104,12 +104,12 @@ export const DashboardLayout: React.FC = () => {
               weights={weights}
               setWeights={setWeights}
             />
-
+            <ChordDiagramPanel size={400} canvasWidth={dimensions.width} />
             {activeNode && (
               <div className="absolute top-0 right-0 z-40 h-full bg-white shadow-2xl">
                 <ThreadPanel
                   threadId={activeThreadId}
-                  messages={activeMessages as DAGNode[]}
+                  messages={activeMessages}
                   nodeMap={nodeMap}
                   onClose={() => setSelectedNodeId(null)}
                   onHoverMessage={setSidebarHoveredId}
