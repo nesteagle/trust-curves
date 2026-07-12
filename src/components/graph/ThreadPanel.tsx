@@ -65,7 +65,7 @@ export const ThreadPanel: React.FC<ThreadPanelProps> = ({
             onClick={onClose}
             className="flex items-center justify-center w-8 h-8 transition-colors rounded-md hover:bg-slate-200/60 text-slate-400 hover:text-slate-600"
           >
-            X
+            <i className="ti ti-x cursor-pointer text-lg leading-none" />
           </button>
         </header>
 

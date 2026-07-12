@@ -4,7 +4,7 @@ import { normalizeScore } from "../../utils/scores";
 import { formatDimensionKey } from "../../utils/dimensions";
 import { WindRose } from "../charts/WindRose";
 import type { DAGNode } from "../../hooks/useGraphNetwork";
-
+import { CATEGORY_DESCRIPTIONS } from "../../utils/categoryLabels";
 interface ScoreBadgeProps {
   label: string;
   value: number | null | undefined;
@@ -91,7 +91,7 @@ export const EvaluationAuditModal: React.FC<AuditModalProps> = ({
             onClick={onClose}
             className="flex items-center justify-center w-8 h-8 transition-colors rounded-lg bg-slate-200/60 text-slate-500 hover:bg-slate-200 hover:text-slate-700"
           >
-            X
+            <i className="ti ti-x cursor-pointer text-lg leading-none" />
           </button>
         </header>
 
@@ -156,6 +156,7 @@ export const EvaluationAuditModal: React.FC<AuditModalProps> = ({
 
             {currentEntries.map(([key, [explanation, score]]) => {
               const displayKey = formatDimensionKey(key);
+              const categoryDescription = CATEGORY_DESCRIPTIONS[key];
 
               return (
                 <div
@@ -169,7 +170,10 @@ export const EvaluationAuditModal: React.FC<AuditModalProps> = ({
                   }`}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-bold tracking-tight uppercase text-slate-800">
+                    <span
+                      title={categoryDescription}
+                      className="text-xs font-bold tracking-tight uppercase text-slate-800 border-b border-dashed border-slate-300 hover:border-slate-500 cursor-help transition-colors"
+                    >
                       {displayKey}
                     </span>
                     <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-slate-200/80">
