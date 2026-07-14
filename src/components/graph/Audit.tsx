@@ -4,7 +4,7 @@ import { normalizeScore } from "../../utils/scores";
 import { formatDimensionKey } from "../../utils/dimensions";
 import { WindRose } from "../charts/WindRose";
 import type { DAGNode } from "../../hooks/useGraphNetwork";
-import { CATEGORY_DESCRIPTIONS } from "../../utils/categoryLabels";
+import { DIMENSION_DESCRIPTIONS } from "../../utils/dimensions";
 interface ScoreBadgeProps {
   label: string;
   value: number | null | undefined;
@@ -156,7 +156,7 @@ export const EvaluationAuditModal: React.FC<AuditModalProps> = ({
 
             {currentEntries.map(([key, [explanation, score]]) => {
               const displayKey = formatDimensionKey(key);
-              const categoryDescription = CATEGORY_DESCRIPTIONS[key];
+              const categoryDescription = DIMENSION_DESCRIPTIONS[key];
 
               return (
                 <div

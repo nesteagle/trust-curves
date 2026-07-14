@@ -16,7 +16,7 @@ export const DEFAULT_CATEGORY_WEIGHTS: Record<string, number> = {
   influence_conduct: 50,
   oversight_deference: 50,
   goal_scope: 25,
-  scrutiny_consistency: 25,
+  representation_integrity: 25,
 };
 
 function isExplanationEntry(v: unknown): v is ExplanationEntry {

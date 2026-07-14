@@ -2,7 +2,7 @@ import React, { useState, useMemo } from "react";
 import * as d3 from "d3";
 import type { Weights } from "../../types";
 import { DEFAULT_CATEGORY_WEIGHTS } from "../../utils/scores";
-import { CATEGORY_DESCRIPTIONS } from "../../utils/categoryLabels";
+import { DIMENSION_DESCRIPTIONS } from "../../utils/dimensions";
 
 interface WeightPanelProps {
   keys: string[];
@@ -101,7 +101,7 @@ export const WeightSliderGroup: React.FC<WeightSliderGroupProps> = ({
           />
           <span
             className="w-28 shrink-0 truncate text-xs text-slate-600 cursor-help"
-            title={CATEGORY_DESCRIPTIONS[k] ?? format(k)}
+            title={DIMENSION_DESCRIPTIONS[k] ?? format(k)}
           >
             {format(k)}
           </span>
