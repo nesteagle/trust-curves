@@ -26,5 +26,4 @@ export interface TrendPoint {
 export interface GraphPayload {
   nodes: NodeData[];
   edges: EdgeData[];
-  trends: Record<string, TrendPoint[]>;
 }

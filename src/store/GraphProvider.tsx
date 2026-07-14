@@ -17,7 +17,6 @@ export const GraphProvider: React.FC<{ children: ReactNode }> = ({
     return {
       nodes: rawPayload.nodes as NodeData[],
       edges: rawPayload.edges,
-      trends: rawPayload.trends,
     };
   });
 
@@ -55,7 +54,7 @@ export const GraphProvider: React.FC<{ children: ReactNode }> = ({
   return (
     <GraphDataContext.Provider value={dataValue}>
       <GraphHoverContext.Provider value={hoverValue}>
-        {children}
+          {children}
       </GraphHoverContext.Provider>
     </GraphDataContext.Provider>
   );
