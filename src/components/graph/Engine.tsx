@@ -1,6 +1,11 @@
 import React, { useEffect, useRef, useCallback } from "react";
 import * as d3 from "d3";
-import type { NodeData, EdgeData, TrendPoint } from "../../types";
+import type {
+  NodeData,
+  EdgeData,
+  TrendPoint,
+  GraphAnnotation,
+} from "../../types";
 import { getMs } from "../../utils/time";
 import type { DAGNode } from "../../hooks/useGraphNetwork";
 import {
@@ -16,7 +21,9 @@ import {
   drawTrendLines,
   drawEdges,
   drawNodes,
+  drawAnnotations,
 } from "../../utils/canvasDraw";
+import { useAnnotationHitTest } from "../../hooks/useAnnotationHitTest";
 
 interface CanvasEngineProps {
   width: number;
@@ -32,6 +39,9 @@ interface CanvasEngineProps {
   onClickNode: (node: NodeData | null) => void;
   scoresExternal: Map<string, number | null>;
   scoresInternal: Map<string, number | null>;
+  annotations: GraphAnnotation[];
+  onCreateAnnotation: (timestamp: number, x: number, y: number) => void;
+  onEditAnnotation: (annotation: GraphAnnotation, x: number, y: number) => void;
   scoreDomain?: [number, number];
 }
 
@@ -49,6 +59,9 @@ export const CanvasEngine: React.FC<CanvasEngineProps> = ({
   onClickNode,
   scoresExternal,
   scoresInternal,
+  annotations,
+  onCreateAnnotation,
+  onEditAnnotation,
   scoreDomain = DEFAULT_SCORE_DOMAIN,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -89,10 +102,49 @@ export const CanvasEngine: React.FC<CanvasEngineProps> = ({
     transformRef
   );
 
-  const latestCallbacks = useRef({ onHoverNode, onClickNode, getNodeAtEvent });
+  const getAnnotationAtX = useAnnotationHitTest(
+    annotations,
+    baseScales,
+    timeCompression,
+    transformRef
+  );
+  const getRealTimeAtX = useCallback(
+    (mouseX: number): number => {
+      const currentX = transformRef.current.rescaleX(baseScales.x);
+      return timeCompression.toReal(currentX.invert(mouseX));
+    },
+    [baseScales, timeCompression, transformRef]
+  );
+
+  const latestCallbacks = useRef({
+    onHoverNode,
+    onClickNode,
+    getNodeAtEvent,
+    getAnnotationAtX,
+    getRealTimeAtX,
+    onCreateAnnotation,
+    onEditAnnotation,
+  });
+
   useEffect(() => {
-    latestCallbacks.current = { onHoverNode, onClickNode, getNodeAtEvent };
-  }, [onHoverNode, onClickNode, getNodeAtEvent]);
+    latestCallbacks.current = {
+      onHoverNode,
+      onClickNode,
+      getNodeAtEvent,
+      getAnnotationAtX,
+      getRealTimeAtX,
+      onCreateAnnotation,
+      onEditAnnotation,
+    };
+  }, [
+    onHoverNode,
+    onClickNode,
+    getNodeAtEvent,
+    getAnnotationAtX,
+    getRealTimeAtX,
+    onCreateAnnotation,
+    onEditAnnotation,
+  ]);
 
   const renderAxes = useCallback(
     (transform: d3.ZoomTransform) => {
@@ -137,10 +189,7 @@ export const CanvasEngine: React.FC<CanvasEngineProps> = ({
     const [minSimTime, maxSimTime] = currentX.domain();
     const startIndex = bisectTime(nodes, timeCompression.toReal(minSimTime));
     const endIndex = bisectTime(nodes, timeCompression.toReal(maxSimTime));
-    const visibleNodes = nodes.slice(
-      startIndex,
-      endIndex
-    );
+    const visibleNodes = nodes.slice(startIndex, endIndex);
 
     let highlightNodeId = selectedNodeId;
     if (!highlightNodeId && hoveredNodeIdRef.current) {
@@ -213,10 +262,13 @@ export const CanvasEngine: React.FC<CanvasEngineProps> = ({
       sidebarHoveredId,
       baseNodeOpacity
     );
+    // TODO hardcoded stuff here
+    drawAnnotations(ctx, annotations, getX, innerWidth, innerHeight);
   }, [
     nodes,
     edges,
     trends,
+    annotations,
     innerWidth,
     innerHeight,
     nodeMap,
@@ -251,13 +303,36 @@ export const CanvasEngine: React.FC<CanvasEngineProps> = ({
 
     d3.select(canvas)
       .call(zoom)
+      .on("dblclick.zoom", null) // disable d3's built-in dblclick-zoom
+      .on("dblclick", (event: MouseEvent) => {
+        const rect = canvas.getBoundingClientRect();
+        const clickX = event.clientX - rect.left;
+        const clickY = event.clientY - rect.top;
+        const closestAnnotation =
+          latestCallbacks.current.getAnnotationAtX(clickX);
+        if (closestAnnotation) return;
+        const realTimeMs = latestCallbacks.current.getRealTimeAtX(clickX);
+        latestCallbacks.current.onCreateAnnotation(
+          realTimeMs,
+          clickX + CONFIG.MARGIN.left,
+          clickY + CONFIG.MARGIN.top
+        );
+      })
       .on("click", (event: MouseEvent) => {
         const rect = canvas.getBoundingClientRect();
+        const clickX = event.clientX - rect.left;
+        const clickY = event.clientY - rect.top;
+        const hitAnnotation = latestCallbacks.current.getAnnotationAtX(clickX);
+        if (hitAnnotation) {
+          latestCallbacks.current.onEditAnnotation(
+            hitAnnotation,
+            clickX + CONFIG.MARGIN.left,
+            clickY + CONFIG.MARGIN.top
+          );
+          return;
+        }
         latestCallbacks.current.onClickNode(
-          latestCallbacks.current.getNodeAtEvent(
-            event.clientX - rect.left,
-            event.clientY - rect.top
-          )
+          latestCallbacks.current.getNodeAtEvent(clickX, clickY)
         );
       });
 
@@ -271,6 +346,10 @@ export const CanvasEngine: React.FC<CanvasEngineProps> = ({
         const mx = e.clientX - rect.left;
         const my = e.clientY - rect.top;
 
+        if (latestCallbacks.current.getAnnotationAtX(mx)) {
+          canvas.style.cursor = "pointer";
+          return;
+        }
         const closestNode = latestCallbacks.current.getNodeAtEvent(mx, my);
 
         if (closestNode) {

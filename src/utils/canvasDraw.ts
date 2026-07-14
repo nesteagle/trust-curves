@@ -1,5 +1,5 @@
 import * as d3 from "d3";
-import type { NodeData, EdgeData, TrendPoint } from "../types";
+import type { NodeData, EdgeData, TrendPoint, GraphAnnotation } from "../types";
 import type { DAGNode } from "../hooks/useGraphNetwork";
 import { getMs } from "./time";
 import { colorScale } from "../hooks/useColor";
@@ -245,6 +245,47 @@ export const drawNodes = (
       ? CONFIG.LINE_WIDTH.NODE_TINY
       : CONFIG.LINE_WIDTH.NODE_BASE;
     ctx.stroke();
+  });
+  ctx.restore();
+};
+
+export const drawAnnotations = (
+  ctx: CanvasRenderingContext2D,
+  annotations: GraphAnnotation[],
+  getX: (timestamp: string | number) => number,
+  innerWidth: number,
+  innerHeight: number
+) => {
+  if (!annotations || annotations.length === 0) return;
+
+  ctx.save();
+  annotations.forEach((ann) => {
+    const sx = getX(ann.timestamp);
+    if (
+      sx >= -CONFIG.ANNOTATION.VIEWPORT_PADDING &&
+      sx <= innerWidth + CONFIG.ANNOTATION.VIEWPORT_PADDING
+    ) {
+      ctx.beginPath();
+      ctx.moveTo(sx, 0);
+      ctx.lineTo(sx, innerHeight);
+      ctx.strokeStyle = CONFIG.COLOR.ANNOTATION_LINE;
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([4, 4]);
+      ctx.stroke();
+
+      ctx.fillStyle = CONFIG.COLOR.ANNOTATION_LINE;
+      ctx.font = "bold 10px sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+
+      const textWidth = ctx.measureText(ann.label).width;
+      ctx.save();
+      ctx.fillStyle = CONFIG.COLOR.ANNOTATION_LABEL_BG;
+      ctx.fillRect(sx - textWidth / 2 - 4, 0, textWidth + 8, 16);
+      ctx.restore();
+
+      ctx.fillText(ann.label, sx, 4);
+    }
   });
   ctx.restore();
 };

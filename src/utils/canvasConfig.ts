@@ -60,8 +60,11 @@ export const CONFIG = {
   COLOR: {
     TIME_GAP_FILL: "rgba(0, 0, 0, 0.02)",
     TIME_GAP_LINE: "rgba(0, 0, 0, 0.08)",
+    ANNOTATION_LINE: "rgba(100, 116, 139, 0.6)",
+    ANNOTATION_LABEL_BG: "rgba(255, 255, 255, 0.85)",
     TETHER: (opacity: number) => `rgba(180, 50, 50, ${opacity})`,
   },
+  ANNOTATION: { HIT_RADIUS: 8, VIEWPORT_PADDING: 50 },
 };
 
 export const DEFAULT_SCORE_DOMAIN: [number, number] = [-1.25, 1.25];

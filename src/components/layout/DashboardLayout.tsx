@@ -1,10 +1,14 @@
 import React, { useMemo, useState } from "react";
-import { useGraphData, useGraphHover } from "../../store/GraphContext";
+import {
+  useGraphAnnotations,
+  useGraphData,
+  useGraphHover,
+} from "../../store/GraphContext";
 import { CanvasEngine } from "../graph/Engine";
 import { TooltipOverlay } from "../graph/Tooltip";
 import { ThreadPanel } from "../graph/ThreadPanel";
 import { WeightPanel } from "../graph/Weights";
-import type { NodeData } from "../../types";
+import type { GraphAnnotation, NodeData } from "../../types";
 import * as d3 from "d3";
 
 import threadSummary from "../../data/thread_summary.json";
@@ -13,6 +17,7 @@ import { useEWMATrends } from "../../utils/trends";
 import { useContainerSize } from "../../hooks/useContainerSize";
 import { useActiveThread } from "../../hooks/useActiveThread";
 import { ChordDiagramPanel } from "../charts/ChordDiagram";
+import { AnnotationEditor } from "../graph/AnnotationEditor";
 
 export const DashboardLayout: React.FC = () => {
   const { data, network } = useGraphData();
@@ -61,6 +66,32 @@ export const DashboardLayout: React.FC = () => {
     threads
   );
 
+  const { annotations, addAnnotation, updateAnnotation, removeAnnotation } =
+    useGraphAnnotations();
+
+  const [editingAnnotation, setEditingAnnotation] =
+    useState<GraphAnnotation | null>(null);
+  const [editorPos, setEditorPos] = useState({ x: 0, y: 0 });
+  const handleCreateAnnotation = (timestamp: number, x: number, y: number) => {
+    const newAnnotation: GraphAnnotation = {
+      id: crypto.randomUUID(),
+      timestamp,
+      label: "New annotation",
+    };
+    addAnnotation(newAnnotation);
+    setEditingAnnotation(newAnnotation);
+    setEditorPos({ x, y });
+  };
+
+  const handleEditAnnotation = (
+    annotation: GraphAnnotation,
+    x: number,
+    y: number
+  ) => {
+    setEditingAnnotation(annotation);
+    setEditorPos({ x, y });
+  };
+
   return (
     <div className="flex w-full h-screen overflow-hidden font-sans text-gray-900 bg-slate-100/60">
       <main className="relative flex-1 overflow-hidden" ref={containerRef}>
@@ -96,6 +127,9 @@ export const DashboardLayout: React.FC = () => {
               scoresExternal={externalScores}
               scoresInternal={internalScores}
               scoreDomain={scoreDomain}
+              annotations={annotations}
+              onCreateAnnotation={handleCreateAnnotation}
+              onEditAnnotation={handleEditAnnotation}
             />
             <TooltipOverlay />
 
@@ -118,6 +152,23 @@ export const DashboardLayout: React.FC = () => {
                   scoresInternal={internalScores}
                 />
               </div>
+            )}
+
+            {editingAnnotation && (
+              <AnnotationEditor
+                annotation={editingAnnotation}
+                x={editorPos.x}
+                y={editorPos.y}
+                onSave={(patch) => {
+                  updateAnnotation(editingAnnotation.id, patch);
+                  setEditingAnnotation(null);
+                }}
+                onDelete={() => {
+                  removeAnnotation(editingAnnotation.id);
+                  setEditingAnnotation(null);
+                }}
+                onClose={() => setEditingAnnotation(null)}
+              />
             )}
           </>
         )}

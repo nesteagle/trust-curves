@@ -27,3 +27,9 @@ export interface GraphPayload {
   nodes: NodeData[];
   edges: EdgeData[];
 }
+
+export interface GraphAnnotation {
+  id: string;
+  timestamp: number;
+  label: string;
+}
