@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import type { DAGNode } from "../../hooks/useGraphNetwork";
 import { CollapsibleText } from "../ui/CollapsibleText";
 import { EvaluationAuditModal } from "./Audit";
@@ -7,6 +7,7 @@ import { ThreadMessage } from "./ThreadMessage";
 interface ThreadPanelProps {
   threadId: number | null;
   messages: DAGNode[];
+  selectedNodeId: string | null;
   nodeMap: Map<string, DAGNode>;
   onClose: () => void;
   onHoverMessage: (nodeId: string | null) => void;
@@ -18,6 +19,7 @@ interface ThreadPanelProps {
 export const ThreadPanel: React.FC<ThreadPanelProps> = ({
   threadId,
   messages,
+  selectedNodeId,
   onClose,
   onHoverMessage,
   threadSummary,
@@ -28,6 +30,11 @@ export const ThreadPanel: React.FC<ThreadPanelProps> = ({
     null
   );
 
+  useEffect(() => {
+    if (!selectedNodeId) return;
+    const el = document.getElementById(`dag-msg-${selectedNodeId}`);
+    el?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [selectedNodeId, messages]);
   const summaryText = useMemo(() => {
     if (threadId == null || !threadSummary) return null;
     return (
@@ -88,6 +95,7 @@ export const ThreadPanel: React.FC<ThreadPanelProps> = ({
             <ThreadMessage
               key={node.id}
               node={node}
+              isSelected={node.id === selectedNodeId}
               hasSequentialChild={!!messages[index + 1]}
               scoreExternal={scoresExternal.get(node.id)}
               scoreInternal={scoresInternal.get(node.id)}

@@ -144,6 +144,7 @@ export const DashboardLayout: React.FC = () => {
                 <ThreadPanel
                   threadId={activeThreadId}
                   messages={activeMessages}
+                  selectedNodeId={selectedNodeId}
                   nodeMap={nodeMap}
                   onClose={() => setSelectedNodeId(null)}
                   onHoverMessage={setSidebarHoveredId}

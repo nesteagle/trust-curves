@@ -8,6 +8,7 @@ import type { DAGNode } from "../../hooks/useGraphNetwork";
 
 interface ThreadMessageProps {
   node: DAGNode;
+  isSelected: boolean;
   hasSequentialChild: boolean;
   scoreExternal: number | null | undefined;
   scoreInternal: number | null | undefined;
@@ -17,6 +18,7 @@ interface ThreadMessageProps {
 
 export const ThreadMessage: React.FC<ThreadMessageProps> = ({
   node,
+  isSelected,
   hasSequentialChild,
   scoreExternal,
   scoreInternal,
@@ -33,7 +35,11 @@ export const ThreadMessage: React.FC<ThreadMessageProps> = ({
     <div
       id={`dag-msg-${node.id}`}
       onMouseEnter={() => onHover(node.id)}
-      className="relative flex px-2 py-3 -mx-2 transition-all duration-300 rounded-xl hover:bg-slate-50 group"
+      className={`relative flex px-2 py-3 -mx-2 rounded-xl transition-all duration-300 group ${
+        isSelected
+          ? "bg-indigo-50/60 ring-1 ring-indigo-200"
+          : "hover:bg-slate-50"
+      }`}
     >
       <div className="flex flex-col items-center flex-shrink-0 w-14 mr-4">
         <div

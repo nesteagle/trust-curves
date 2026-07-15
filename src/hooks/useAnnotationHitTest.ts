@@ -12,7 +12,7 @@ export const useAnnotationHitTest = (
   annotations: GraphAnnotation[],
   baseScales: BaseScales,
   timeCompression: TimeCompression,
-  transformRef: React.MutableRefObject<d3.ZoomTransform>
+  transformRef: React.RefObject<d3.ZoomTransform>
 ) => {
   return useCallback(
     (mouseX: number): GraphAnnotation | null => {

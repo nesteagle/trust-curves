@@ -64,7 +64,7 @@ export const CONFIG = {
     ANNOTATION_LABEL_BG: "rgba(255, 255, 255, 0.85)",
     TETHER: (opacity: number) => `rgba(180, 50, 50, ${opacity})`,
   },
-  ANNOTATION: { HIT_RADIUS: 8, VIEWPORT_PADDING: 50 },
+  ANNOTATION: { HIT_RADIUS: 4, VIEWPORT_PADDING: 50 },
 };
 
 export const DEFAULT_SCORE_DOMAIN: [number, number] = [-1.25, 1.25];
