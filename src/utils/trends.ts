@@ -5,7 +5,7 @@ const DEFAULT_ALPHA = 0.1;
 
 export function computeEWMATrends(
   nodes: NodeData[],
-  scoresExternal: Map<string, number | null>,
+  scores: Map<string, number | null>,
   alpha: number = DEFAULT_ALPHA
 ): Record<string, TrendPoint[]> {
   const byAgent = new Map<string, NodeData[]>();
@@ -20,7 +20,7 @@ export function computeEWMATrends(
     let ewma: number | null = null;
 
     const points: TrendPoint[] = agentNodes.map((n) => {
-      const score = scoresExternal.get(n.id);
+      const score = scores.get(n.id);
 
       if (score == null) {
         return { timestamp: n.timestamp, rollingAvg: null };
@@ -38,11 +38,11 @@ export function computeEWMATrends(
 
 export function useEWMATrends(
   nodes: NodeData[],
-  scoresExternal: Map<string, number | null>,
+  scores: Map<string, number | null>,
   alpha: number = DEFAULT_ALPHA
 ): Record<string, TrendPoint[]> {
   return useMemo(
-    () => computeEWMATrends(nodes, scoresExternal, alpha),
-    [nodes, scoresExternal, alpha]
+    () => computeEWMATrends(nodes, scores, alpha),
+    [nodes, scores, alpha]
   );
 }

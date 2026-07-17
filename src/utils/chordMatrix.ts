@@ -29,7 +29,11 @@ export function generateChordMatrix(
     );
 
   const entities = Array.from(
-    new Set(agentEdges.flatMap((e) => [e.sourceAgent, e.targetAgent]))
+    new Set(
+      nodes
+        .map((node) => node.agent)
+        .filter((agent): agent is string => !!agent)
+    )
   ).sort();
 
   const size = entities.length;

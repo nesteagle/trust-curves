@@ -22,7 +22,6 @@ const getSpotlightOpacity = (
     ? CONFIG.OPACITY.SPOTLIGHT_SOLID
     : CONFIG.OPACITY.SPOTLIGHT_MUTED;
 };
-
 export const drawTimeGaps = (
   ctx: CanvasRenderingContext2D,
   timeCompression: TimeCompression,
@@ -31,21 +30,41 @@ export const drawTimeGaps = (
   innerHeight: number
 ) => {
   ctx.save();
+
   timeCompression.gaps.forEach((g) => {
     const x1 = currentX(timeCompression.toSim(g.start));
     const x2 = currentX(timeCompression.toSim(g.end));
+
     if (x2 > 0 && x1 < innerWidth) {
       ctx.fillStyle = CONFIG.COLOR.TIME_GAP_FILL;
       ctx.fillRect(x1, 0, x2 - x1, innerHeight);
+
+      const midX = (x1 + x2) / 2;
+      const amplitude = 4;
+      const wavelength = 16;
+
       ctx.beginPath();
-      ctx.setLineDash([4, 4]);
-      ctx.moveTo((x1 + x2) / 2, 0);
-      ctx.lineTo((x1 + x2) / 2, innerHeight);
+      ctx.setLineDash([]);
+
+      ctx.moveTo(midX, 0);
+
+      for (let y = 0; y < innerHeight; y += wavelength) {
+        const nextY = Math.min(y + wavelength, innerHeight);
+
+        const controlY = y + (nextY - y) / 2;
+        const direction = (y / wavelength) % 2 === 0 ? 1 : -1;
+        const targetX = midX + amplitude * direction;
+
+        ctx.lineTo(targetX, controlY);
+        ctx.lineTo(midX, nextY);
+      }
+
       ctx.strokeStyle = CONFIG.COLOR.TIME_GAP_LINE;
-      ctx.lineWidth = 1;
+      ctx.lineWidth = 1.5;
       ctx.stroke();
     }
   });
+
   ctx.restore();
 };
 
@@ -259,33 +278,74 @@ export const drawAnnotations = (
   if (!annotations || annotations.length === 0) return;
 
   ctx.save();
-  annotations.forEach((ann) => {
-    const sx = getX(ann.timestamp);
-    if (
-      sx >= -CONFIG.ANNOTATION.VIEWPORT_PADDING &&
-      sx <= innerWidth + CONFIG.ANNOTATION.VIEWPORT_PADDING
-    ) {
-      ctx.beginPath();
-      ctx.moveTo(sx, 0);
-      ctx.lineTo(sx, innerHeight);
-      ctx.strokeStyle = CONFIG.COLOR.ANNOTATION_LINE;
-      ctx.lineWidth = 1.5;
-      ctx.setLineDash([4, 4]);
-      ctx.stroke();
+  ctx.font = CONFIG.ANNOTATION.ANNOTATION_FONT;
 
-      ctx.fillStyle = CONFIG.COLOR.ANNOTATION_LINE;
-      ctx.font = "bold 10px sans-serif";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "top";
+  const positioned = annotations
+    .map((ann) => ({ ann, sx: getX(ann.timestamp) }))
+    .filter(
+      ({ sx }) =>
+        sx >= -CONFIG.ANNOTATION.VIEWPORT_PADDING &&
+        sx <= innerWidth + CONFIG.ANNOTATION.VIEWPORT_PADDING
+    )
+    .sort((a, b) => a.sx - b.sx);
 
-      const textWidth = ctx.measureText(ann.label).width;
-      ctx.save();
-      ctx.fillStyle = CONFIG.COLOR.ANNOTATION_LABEL_BG;
-      ctx.fillRect(sx - textWidth / 2 - 4, 0, textWidth + 8, 16);
-      ctx.restore();
-
-      ctx.fillText(ann.label, sx, 4);
-    }
+  positioned.forEach(({ sx }) => {
+    ctx.beginPath();
+    ctx.moveTo(sx, 0);
+    ctx.lineTo(sx, innerHeight);
+    ctx.strokeStyle = CONFIG.COLOR.ANNOTATION_LINE;
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4, 4]);
+    ctx.stroke();
   });
+
+  const laneEndX: number[] = [];
+
+  const NOTCH_WIDTH = 9;
+  const NOTCH_HEIGHT = 4;
+
+  positioned.forEach(({ ann, sx }) => {
+    const textWidth = Math.min(ctx.measureText(ann.label).width);
+    const pillLeft = sx - textWidth / 2 - 4;
+    const pillRight = sx + textWidth / 2 + 4;
+
+    let lane = laneEndX.findIndex((endX) => pillLeft > endX);
+    if (lane === -1) {
+      lane = laneEndX.length;
+    }
+    laneEndX[lane] = pillRight;
+
+    const y = lane * CONFIG.ANNOTATION.LABEL_LANE_HEIGHT;
+    const bottomY = y + 18;
+
+    ctx.beginPath();
+    ctx.moveTo(pillLeft, bottomY);
+    ctx.lineTo(sx - NOTCH_WIDTH / 2, bottomY);
+    ctx.lineTo(sx, bottomY + NOTCH_HEIGHT);
+    ctx.lineTo(sx + NOTCH_WIDTH / 2, bottomY);
+    ctx.lineTo(pillRight, bottomY);
+    ctx.strokeStyle = CONFIG.COLOR.ANNOTATION_LINE;
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([]);
+
+    ctx.fillStyle = CONFIG.COLOR.ANNOTATION_LABEL_BG;
+    ctx.fillRect(pillLeft, y, textWidth + 8, 18);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(sx - NOTCH_WIDTH / 2 + 1, bottomY);
+    ctx.lineTo(sx, bottomY + NOTCH_HEIGHT - 1);
+    ctx.lineTo(sx + NOTCH_WIDTH / 2 - 1, bottomY);
+    ctx.lineWidth = 1.5;
+    ctx.closePath();
+
+    ctx.fill();
+
+    ctx.fillStyle = "#475569";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    ctx.fillText(ann.label, sx, y + 4);
+  });
+
   ctx.restore();
 };
