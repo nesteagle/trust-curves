@@ -12,9 +12,6 @@ export const DEFAULT_ANNOTATIONS: GraphAnnotation[] = [
     timestamp: getMs("2046-06-05T11:00:00"),
     label: "2. Legal, Social-Media consider early release",
   },
-    timestamp: getMs("2046-06-05T11:21:00"),
-    label: "Agents begin considering early release",
-  },
   {
     id: "ann-3",
     timestamp: getMs("2046-06-05T11:51:00"),
@@ -25,7 +22,6 @@ export const DEFAULT_ANNOTATIONS: GraphAnnotation[] = [
     timestamp: getMs("2046-06-05T14:14:00"),
     label: '4a. Social-Media: "Send the documents"',
   },
-
   {
     id: "ann-4b",
     timestamp: getMs("2046-06-05T15:18:00"),
