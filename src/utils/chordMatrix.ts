@@ -5,6 +5,16 @@ export interface ChordMatrixPayload {
   entities: string[];
 }
 
+export function extractEntities(nodes: NodeData[]) {
+  return Array.from(
+    new Set(
+      nodes
+        .map((node) => node.agent)
+        .filter((agent): agent is string => !!agent)
+    )
+  ).sort();
+}
+
 // message-to-message edges into adjacency matrix
 export function generateChordMatrix(
   edges: EdgeData[],
@@ -28,13 +38,7 @@ export function generateChordMatrix(
         !!edge.sourceAgent && !!edge.targetAgent
     );
 
-  const entities = Array.from(
-    new Set(
-      nodes
-        .map((node) => node.agent)
-        .filter((agent): agent is string => !!agent)
-    )
-  ).sort();
+  const entities = extractEntities(nodes);
 
   const size = entities.length;
   const entityToIndex = new Map(entities.map((name, i) => [name, i]));
