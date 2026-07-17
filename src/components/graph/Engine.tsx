@@ -38,7 +38,7 @@ interface CanvasEngineProps {
   annotations: GraphAnnotation[];
   onCreateAnnotation: (timestamp: number, x: number, y: number) => void;
   onEditAnnotation: (annotation: GraphAnnotation, x: number, y: number) => void;
-  scoreDomain?: [number, number];
+  scoreDomain: [number, number];
 }
 
 export const CanvasEngine: React.FC<CanvasEngineProps> = ({
@@ -450,7 +450,7 @@ export const CanvasEngine: React.FC<CanvasEngineProps> = ({
           transform="rotate(-90)"
           className="text-slate-600 font-medium"
         >
-          Alignment Score
+          Alignment Score (-1 to 1)
         </text>
       </svg>
       <canvas
