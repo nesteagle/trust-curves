@@ -3,13 +3,12 @@ import * as d3 from "d3";
 import { colorScale } from "../../hooks/useColor";
 import { useGraphData } from "../../store/GraphContext";
 import { generateChordMatrix } from "../../utils/chordMatrix";
-import { bisectTime, CONFIG } from "../../utils/canvasConfig";
-import { useTimeCompression } from "../../hooks/useTimeCompression";
-import type { NodeData } from "../../types";
+import { useEntitiesInView } from "../../hooks/useInView";
 
-const OUTER_RADIUS_RATIO = 0.32;
-const INNER_RADIUS_RATIO = 0.3;
+const OUTER_RADIUS_RATIO = 0.36;
+const INNER_RADIUS_RATIO = 0.34;
 const RIBBON_PAD_ANGLE = 0.02;
+const LABEL_SPACE_PX = 30;
 
 interface ChordSelection {
   type: "node" | "edge";
@@ -34,6 +33,9 @@ const sameSelection = (
   return a.source === b.source && a.target === b.target;
 };
 
+function cleanLabel(label: string): string {
+  return label.replaceAll("-Agent", "");
+}
 export const ChordDiagram: React.FC<ChordDiagramProps> = ({
   matrix,
   labels,
@@ -55,6 +57,8 @@ export const ChordDiagram: React.FC<ChordDiagramProps> = ({
 
     const outerRadius = size * OUTER_RADIUS_RATIO;
     const innerRadius = size * INNER_RADIUS_RATIO;
+
+    const viewBoxSize = size + LABEL_SPACE_PX * 2;
 
     const chordLayout = d3
       .chordDirected()
@@ -79,7 +83,10 @@ export const ChordDiagram: React.FC<ChordDiagramProps> = ({
       .append("svg")
       .attr("width", size)
       .attr("height", size)
-      .attr("viewBox", `${-size / 2} ${-size / 2} ${size} ${size}`)
+      .attr(
+        "viewBox",
+        `${-viewBoxSize / 2} ${-viewBoxSize / 2} ${viewBoxSize} ${viewBoxSize}`
+      )
       .attr("font-family", "inherit");
 
     const ribbonLayer = svg.append("g").attr("fill-opacity", 0.7);
@@ -155,8 +162,8 @@ export const ChordDiagram: React.FC<ChordDiagramProps> = ({
     // add tooltip
     ribbons.append("title").text((d) => {
       const count = matrix[d.source.index][d.target.index];
-      const from = labels[d.source.index].replaceAll("-Agent", "");
-      const to = labels[d.target.index].replaceAll("-Agent", "");
+      const from = cleanLabel(labels[d.source.index]);
+      const to = cleanLabel(labels[d.target.index]);
       return `${from} -> ${to}: ${count} message${count === 1 ? "" : "s"}`;
     });
 
@@ -178,10 +185,10 @@ export const ChordDiagram: React.FC<ChordDiagramProps> = ({
         d3.rgb(colorScale(labels[d.index])).darker(0.6).toString()
       );
 
-    groups
+    const groupLabels = groups
       .select<SVGTextElement>("text.group-label")
       .attr("dy", "0.32em")
-      .attr("font-size", 10)
+      .attr("font-size", 12)
       .attr("font-weight", "500")
       .attr("fill", "#4A5568")
       .attr("transform", (d) => {
@@ -193,7 +200,9 @@ export const ChordDiagram: React.FC<ChordDiagramProps> = ({
       .attr("text-anchor", (d) =>
         (d.startAngle + d.endAngle) / 2 > Math.PI ? "end" : "start"
       )
-      .text((d) => labels[d.index].replaceAll("-Agent", ""));
+      .text((d) => cleanLabel(labels[d.index]));
+
+    groupLabels.append("title").text((d) => cleanLabel(labels[d.index]));
 
     groups
       .on("mouseenter", (_, d) =>
@@ -234,87 +243,86 @@ export const ChordDiagram: React.FC<ChordDiagramProps> = ({
   );
 };
 
-function getNodesInView(
-  nodes: NodeData[],
-  timeBounds: [number, number] | undefined,
-  transform: d3.ZoomTransform,
-  innerWidth: number,
-  toSim: (real: number) => number,
-  toReal: (sim: number) => number
-) {
-  if (nodes.length === 0 || !timeBounds) return nodes;
-
-  const simMin = toSim(timeBounds[0]);
-  const simMax = toSim(timeBounds[1]);
-  const pad = (simMax - simMin) * CONFIG.X_PAD_RATIO;
-
-  const baseXScale = d3
-    .scaleLinear()
-    .domain([simMin - pad, simMax + pad])
-    .range([0, innerWidth]);
-
-  const currentXScale = transform.rescaleX(baseXScale);
-  const [minSimTime, maxSimTime] = currentXScale.domain();
-
-  const startIndex = bisectTime(nodes, toReal(minSimTime));
-  const endIndex = bisectTime(nodes, toReal(maxSimTime));
-
-  return nodes.slice(startIndex, endIndex);
-}
-
 interface ChordDiagramPanelProps {
   size: number;
   canvasWidth: number;
 }
-
 export const ChordDiagramPanel: React.FC<ChordDiagramPanelProps> = ({
   size,
   canvasWidth,
 }) => {
-  const [open, setOpen] = useState(false);
-  const { data, network } = useGraphData();
-  const [transform, setTransform] = useState(d3.zoomIdentity);
-
-  useEffect(() => {
-    const handleTransform = (e: Event) => {
-      const { detail } = e as CustomEvent<d3.ZoomTransform>;
-      setTransform(detail);
-    };
-    window.addEventListener("graph-transform", handleTransform);
-    return () => window.removeEventListener("graph-transform", handleTransform);
-  }, []);
-
-  const nodes = network.nodes;
-  const timeCompression = useTimeCompression(nodes);
-
-  const innerWidth = Math.max(
-    0,
-    canvasWidth - CONFIG.MARGIN.left - CONFIG.MARGIN.right
-  );
-
-  const nodesInView = useMemo(() => {
-    return getNodesInView(
-      nodes,
-      network?.timeBounds,
-      transform,
-      innerWidth,
-      timeCompression.toSim,
-      timeCompression.toReal
-    );
-  }, [nodes, network?.timeBounds, transform, innerWidth, timeCompression]);
+  const [open, setOpen] = useState(true);
+  const { data } = useGraphData();
+  const { nodesInView } = useEntitiesInView(canvasWidth);
 
   const { matrix, entities } = useMemo(() => {
     const edges = data?.edges ?? [];
     return generateChordMatrix(edges, nodesInView);
   }, [data?.edges, nodesInView]);
 
+  // drag state
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const dragState = useRef<{
+    startX: number;
+    startY: number;
+    originX: number;
+    originY: number;
+    moved: boolean;
+  } | null>(null);
+
+  const DRAG_THRESHOLD = 12;
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    dragState.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      originX: position.x,
+      originY: position.y,
+      moved: false,
+    };
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!dragState.current) return;
+    const dx = e.clientX - dragState.current.startX;
+    const dy = e.clientY - dragState.current.startY;
+
+    if (Math.abs(dx) > DRAG_THRESHOLD || Math.abs(dy) > DRAG_THRESHOLD) {
+      dragState.current.moved = true;
+    }
+
+    if (dragState.current.moved) {
+      setPosition({
+        x: dragState.current.originX + dx,
+        y: dragState.current.originY + dy,
+      });
+    }
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+    const wasDrag = dragState.current?.moved ?? false;
+    dragState.current = null;
+    if (!wasDrag) {
+      setOpen((o) => !o);
+    }
+  };
+
   return (
-    <div className="absolute right-6 top-4 z-30 flex w-fit min-w-[240px] max-w-[400px] flex-col rounded-lg border border-slate-200 bg-white/95 shadow-lg backdrop-blur-sm pointer-events-auto">
+    <div
+      className="z-10 flex w-fit min-w-[8vw] flex-col-reverse rounded-lg border border-slate-200 bg-white/95 shadow-sm backdrop-blur-sm pointer-events-auto"
+      style={{
+        transform: `translate(${position.x}px, ${position.y}px)`,
+      }}
+    >
       <button
-        onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center justify-between px-3 py-2 text-xs font-semibold text-slate-700"
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        className="flex w-full items-center justify-between px-3 py-2 text-sm font-semibold text-slate-700 cursor-grab active:cursor-grabbing touch-none"
       >
-        <span>Message flow</span>
+        <span>Agent interactions</span>
         <i
           className={`ti cursor-pointer ${
             open ? "ti-minus" : "ti-plus"
@@ -323,13 +331,8 @@ export const ChordDiagramPanel: React.FC<ChordDiagramPanelProps> = ({
       </button>
 
       {open && (
-        <div className="border-t border-slate-100 px-3 py-3 flex flex-col items-center">
-          <p className="mb-3 text-[12px] leading-relaxed text-slate-400 w-full font-small">
-            View outbound message volume and patterns across rendered messages.
-          </p>
-          <div className="bg-slate-50/50 rounded-lg border border-slate-100 p-1 w-full flex justify-center">
-            <ChordDiagram matrix={matrix} labels={entities} size={size} />
-          </div>
+        <div className="bg-slate-50/50 rounded-lg border border-slate-100 p-1 w-full flex justify-center">
+          <ChordDiagram matrix={matrix} labels={entities} size={size} />
         </div>
       )}
     </div>

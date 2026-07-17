@@ -7,7 +7,6 @@ import {
 import { CanvasEngine } from "../graph/Engine";
 import { TooltipOverlay } from "../graph/Tooltip";
 import { ThreadPanel } from "../graph/ThreadPanel";
-import { WeightPanel } from "../graph/Weights";
 import type { GraphAnnotation, NodeData } from "../../types";
 import * as d3 from "d3";
 
@@ -29,9 +28,6 @@ export const DashboardLayout: React.FC = () => {
   const [containerRef, dimensions] = useContainerSize<HTMLDivElement>();
 
   const {
-    keys,
-    weights,
-    setWeights,
     externalScores,
     internalScores,
     deceptionDeltas,
@@ -132,13 +128,9 @@ export const DashboardLayout: React.FC = () => {
               onEditAnnotation={handleEditAnnotation}
             />
             <TooltipOverlay />
-
-            <WeightPanel
-              keys={keys}
-              weights={weights}
-              setWeights={setWeights}
-            />
-            <ChordDiagramPanel size={400} canvasWidth={dimensions.width} />
+            <div className="absolute left-24 bottom-18 z-30 flex flex-col-reverse items-start gap-2">
+              <ChordDiagramPanel size={400} canvasWidth={dimensions.width} />
+            </div>
             {activeNode && (
               <div className="absolute top-0 right-0 z-40 h-full bg-white shadow-2xl">
                 <ThreadPanel
@@ -154,7 +146,6 @@ export const DashboardLayout: React.FC = () => {
                 />
               </div>
             )}
-
             {editingAnnotation && (
               <AnnotationEditor
                 annotation={editingAnnotation}

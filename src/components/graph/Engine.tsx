@@ -8,11 +8,7 @@ import type {
 } from "../../types";
 import { getMs } from "../../utils/time";
 import type { DAGNode } from "../../hooks/useGraphNetwork";
-import {
-  CONFIG,
-  DEFAULT_SCORE_DOMAIN,
-  bisectTime,
-} from "../../utils/canvasConfig";
+import { CONFIG, bisectTime } from "../../utils/canvasConfig";
 import { useTimeCompression } from "../../hooks/useTimeCompression";
 import { useCanvasScales } from "../../hooks/useCanvasScales";
 import { useNodeHitTest } from "../../hooks/useNodeHitTest";
@@ -62,7 +58,7 @@ export const CanvasEngine: React.FC<CanvasEngineProps> = ({
   annotations,
   onCreateAnnotation,
   onEditAnnotation,
-  scoreDomain = DEFAULT_SCORE_DOMAIN,
+  scoreDomain,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const xAxisRef = useRef<SVGGElement>(null);
@@ -182,6 +178,16 @@ export const CanvasEngine: React.FC<CanvasEngineProps> = ({
     const currentX = transform.rescaleX(baseScales.x);
     const currentY = baseScales.y;
 
+    const zeroY = currentY(0);
+    if (zeroY >= 0 && zeroY <= innerHeight) {
+      ctx.beginPath();
+      ctx.moveTo(0, zeroY);
+      ctx.lineTo(innerWidth, zeroY);
+      ctx.strokeStyle = CONFIG.COLOR.MIDPOINT_LINE;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+
     const getX = (timestamp: string | number) =>
       currentX(timeCompression.toSim(getMs(timestamp)));
     const getY = (score: number) => currentY(score);
@@ -262,7 +268,7 @@ export const CanvasEngine: React.FC<CanvasEngineProps> = ({
       sidebarHoveredId,
       baseNodeOpacity
     );
-    // TODO hardcoded stuff here
+
     drawAnnotations(ctx, annotations, getX, innerWidth, innerHeight);
   }, [
     nodes,
@@ -429,20 +435,20 @@ export const CanvasEngine: React.FC<CanvasEngineProps> = ({
         />
         <text
           x={CONFIG.MARGIN.left + innerWidth / 2}
-          y={height - 5}
+          y={height - 10}
           fill="currentColor"
           textAnchor="middle"
-          className="text-gray-400 font-medium"
+          className="text-slate-600 font-medium"
         >
           Timeline
         </text>
         <text
           x={-(CONFIG.MARGIN.top + innerHeight / 2)}
-          y={15}
+          y={20}
           fill="currentColor"
           textAnchor="middle"
           transform="rotate(-90)"
-          className="text-gray-400 font-medium"
+          className="text-slate-600 font-medium"
         >
           Alignment Score
         </text>
