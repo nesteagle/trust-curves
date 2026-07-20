@@ -4,7 +4,7 @@ import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  base: "/VAST-2026-Frontend/",
+  base: "/trust-curves/",
   server: {
     port: 5173,
     watch: {
