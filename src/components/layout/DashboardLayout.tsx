@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from "react";
 import {
-  useGraphAnnotations,
+  useGraphAnnotation,
   useGraphData,
+  useGraphFilter,
   useGraphHover,
 } from "../../store/GraphContext";
 import { CanvasEngine } from "../graph/Engine";
@@ -17,21 +18,39 @@ import { useContainerSize } from "../../hooks/useContainerSize";
 import { useActiveThread } from "../../hooks/useActiveThread";
 import { ChordDiagramPanel } from "../charts/ChordDiagram";
 import { AnnotationEditor } from "../graph/AnnotationEditor";
+import { FilterPanel } from "../ui/FilterPanel";
 
 export const DashboardLayout: React.FC = () => {
   const { data, network } = useGraphData();
   const { setHoverState } = useGraphHover();
-  const { nodes: sortedNodes, nodeMap, threads } = network;
+  const filterCtx = useGraphFilter();
+  const { nodes, nodeMap, threads } = network;
 
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [sidebarHoveredId, setSidebarHoveredId] = useState<string | null>(null);
   const [containerRef, dimensions] = useContainerSize<HTMLDivElement>();
 
-  const {
-    externalScores,
-    internalScores,
-    deceptionDeltas,
-  } = useSharedScoring(sortedNodes);
+  const { isNodeFiltered } = filterCtx;
+
+  const visibleNodeIds = useMemo(() => {
+    return new Set(nodes.filter((n) => !isNodeFiltered(n)).map((n) => n.id));
+  }, [nodes, isNodeFiltered]);
+
+  const filteredNodes = useMemo(
+    () => nodes.filter((n) => visibleNodeIds.has(n.id)),
+    [nodes, visibleNodeIds]
+  );
+
+  const filteredEdges = useMemo(
+    () =>
+      data?.edges.filter(
+        (e) => visibleNodeIds.has(e.source) && visibleNodeIds.has(e.target)
+      ),
+    [data?.edges, visibleNodeIds]
+  );
+
+  const { externalScores, internalScores, deceptionDeltas } =
+    useSharedScoring(filteredNodes);
 
   const trendScores = useMemo(() => {
     return new Map(
@@ -39,7 +58,7 @@ export const DashboardLayout: React.FC = () => {
     );
   }, [externalScores]);
 
-  const externalTrends = useEWMATrends(sortedNodes, trendScores);
+  const externalTrends = useEWMATrends(filteredNodes, trendScores);
 
   const scoreDomain = useMemo<[number, number]>(() => {
     const all = [...externalScores.values(), ...internalScores.values()].map(
@@ -63,7 +82,7 @@ export const DashboardLayout: React.FC = () => {
   );
 
   const { annotations, addAnnotation, updateAnnotation, removeAnnotation } =
-    useGraphAnnotations();
+    useGraphAnnotation();
 
   const [editingAnnotation, setEditingAnnotation] =
     useState<GraphAnnotation | null>(null);
@@ -91,13 +110,13 @@ export const DashboardLayout: React.FC = () => {
   return (
     <div className="flex w-full h-screen overflow-hidden font-sans text-gray-900 bg-slate-100/60">
       <main className="relative flex-1 overflow-hidden" ref={containerRef}>
-        {data && dimensions.width !== 0 && (
+        {data && filteredEdges && dimensions.width !== 0 && (
           <>
             <CanvasEngine
               width={dimensions.width}
               height={dimensions.height}
-              nodes={sortedNodes}
-              edges={data.edges}
+              nodes={filteredNodes}
+              edges={filteredEdges}
               trends={externalTrends}
               timeBounds={network.timeBounds}
               nodeMap={nodeMap}
@@ -162,6 +181,9 @@ export const DashboardLayout: React.FC = () => {
                 onClose={() => setEditingAnnotation(null)}
               />
             )}
+            <div className="absolute top-4 left-24 z-40">
+              <FilterPanel />
+            </div>
           </>
         )}
       </main>

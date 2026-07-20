@@ -12,6 +12,8 @@ import {
   GraphHoverContext,
   GraphAnnotationContext,
   type HoverState,
+  GraphFilterContext,
+  type FilterState,
 } from "./GraphContext";
 
 import rawPayload from "../data/data_eval.json";
@@ -58,6 +60,32 @@ export const GraphProvider: React.FC<{ children: ReactNode }> = ({
     [hoverState]
   );
 
+  const [filterState, setFilterState] = useState<FilterState>({
+    visibility: null,
+    channel: null,
+  });
+
+  const isNodeFiltered = useCallback(
+    (node: NodeData) => {
+      if (
+        filterState.visibility &&
+        !filterState.visibility.has(node.visibility)
+      ) {
+        return true;
+      }
+      if (filterState.channel && !filterState.channel.has(node.channel)) {
+        return true;
+      }
+      return false;
+    },
+    [filterState]
+  );
+
+  const filterValue = useMemo(
+    () => ({ filterState, setFilterState, isNodeFiltered }),
+    [filterState, isNodeFiltered]
+  );
+
   const [annotations, setAnnotations] =
     useState<GraphAnnotation[]>(DEFAULT_ANNOTATIONS);
 
@@ -86,9 +114,11 @@ export const GraphProvider: React.FC<{ children: ReactNode }> = ({
   return (
     <GraphDataContext.Provider value={dataValue}>
       <GraphHoverContext.Provider value={hoverValue}>
-        <GraphAnnotationContext.Provider value={annotationValue}>
-          {children}
-        </GraphAnnotationContext.Provider>
+        <GraphFilterContext.Provider value={filterValue}>
+          <GraphAnnotationContext.Provider value={annotationValue}>
+            {children}
+          </GraphAnnotationContext.Provider>
+        </GraphFilterContext.Provider>
       </GraphHoverContext.Provider>
     </GraphDataContext.Provider>
   );

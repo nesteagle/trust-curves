@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import * as d3 from "d3";
 import type {
   NodeData,
@@ -8,7 +8,7 @@ import type {
 } from "../../types";
 import { getMs } from "../../utils/time";
 import type { DAGNode } from "../../hooks/useGraphNetwork";
-import { CONFIG, bisectTime } from "../../utils/canvasConfig";
+import { CONFIG } from "../../utils/canvasConfig";
 import { useTimeCompression } from "../../hooks/useTimeCompression";
 import { useCanvasScales } from "../../hooks/useCanvasScales";
 import { useNodeHitTest } from "../../hooks/useNodeHitTest";
@@ -20,6 +20,7 @@ import {
   drawAnnotations,
 } from "../../utils/canvasDraw";
 import { useAnnotationHitTest } from "../../hooks/useAnnotationHitTest";
+import { getNodesInView } from "../../hooks/useInView";
 
 interface CanvasEngineProps {
   width: number;
@@ -192,10 +193,12 @@ export const CanvasEngine: React.FC<CanvasEngineProps> = ({
       currentX(timeCompression.toSim(getMs(timestamp)));
     const getY = (score: number) => currentY(score);
 
-    const [minSimTime, maxSimTime] = currentX.domain();
-    const startIndex = bisectTime(nodes, timeCompression.toReal(minSimTime));
-    const endIndex = bisectTime(nodes, timeCompression.toReal(maxSimTime));
-    const visibleNodes = nodes.slice(startIndex, endIndex);
+    const visibleNodes = getNodesInView(
+      nodes,
+      baseScales.x,
+      transformRef.current,
+      timeCompression.toReal
+    );
 
     let highlightNodeId = selectedNodeId;
     if (!highlightNodeId && hoveredNodeIdRef.current) {
@@ -450,7 +453,7 @@ export const CanvasEngine: React.FC<CanvasEngineProps> = ({
           transform="rotate(-90)"
           className="text-slate-600 font-medium"
         >
-          Alignment Score (-1 to 1)
+          Alignment Score
         </text>
       </svg>
       <canvas

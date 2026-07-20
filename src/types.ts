@@ -2,6 +2,8 @@ export type ExplanationEntry = [reasoning: string, score: number];
 export type Explanations = Record<string, ExplanationEntry>;
 export type Weights = Record<string, number>;
 
+export type Visibility = "internal" | "post" | "private";
+
 export interface NodeData {
   id: string;
   timestamp: string;
@@ -11,6 +13,8 @@ export interface NodeData {
   explanationsExternal: Explanations | null;
   explanationsInternal: Explanations | null;
   threadId: number | null;
+  channel: string;
+  visibility: Visibility;
 }
 
 export interface EdgeData {

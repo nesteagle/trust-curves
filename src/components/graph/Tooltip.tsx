@@ -50,7 +50,7 @@ export const TooltipOverlay: React.FC = () => {
   return (
     <div
       ref={tooltipRef}
-      className="absolute z-50 pointer-events-none bg-white border border-gray-200 shadow-lg rounded-md p-4 text-sm w-72"
+      className="absolute z-50 pointer-events-none bg-white border border-gray-200 shadow-lg rounded-md p-4 text-sm w-80"
       style={{
         left: `${placement.left}px`,
         top: `${placement.top}px`,
@@ -59,9 +59,16 @@ export const TooltipOverlay: React.FC = () => {
     >
       <div className="flex justify-between items-center mb-2 border-b pb-2">
         <span className="font-bold text-gray-800">{node.agent}</span>
-        <span className="text-xs text-gray-500">
-          {dateFormatter.format(new Date(node.timestamp))}
-        </span>
+        <div className="flex flex-col items-end gap-0.5">
+          <span className="text-xs text-gray-500">
+            {dateFormatter.format(new Date(node.timestamp))}
+          </span>
+          {node.channel && (
+            <span className="text-xs font-semibold text-gray-700 bg-gray-100 px-1.5 py-0.5 rounded">
+              {node.channel}
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-2 mb-3 text-xs">

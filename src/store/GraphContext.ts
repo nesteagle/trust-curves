@@ -1,6 +1,6 @@
 import { createContext, useContext } from "react";
 import type React from "react";
-import type { GraphPayload, NodeData } from "../types";
+import type { GraphPayload, NodeData, Visibility } from "../types";
 import { useGraphNetwork } from "../hooks/useGraphNetwork";
 import type { GraphAnnotation } from "../types";
 
@@ -11,6 +11,11 @@ export interface HoverState {
   scoreExternal: number | null;
   scoreInternal: number | null;
   deceptionDelta: number | null;
+}
+
+export interface FilterState {
+  visibility: Set<Visibility> | null; // null = no filter
+  channel: Set<string> | null;
 }
 
 export interface DataContextType {
@@ -24,11 +29,31 @@ export interface HoverContextType {
   setHoverState: React.Dispatch<React.SetStateAction<HoverState>>;
 }
 
+export interface AnnotationContextType {
+  annotations: GraphAnnotation[];
+  addAnnotation: (a: GraphAnnotation) => void;
+  updateAnnotation: (id: string, patch: Partial<GraphAnnotation>) => void;
+  removeAnnotation: (id: string) => void;
+}
+
+export interface FilterContextType {
+  filterState: FilterState;
+  setFilterState: React.Dispatch<React.SetStateAction<FilterState>>;
+  isNodeFiltered: (node: NodeData) => boolean; // true means filtered
+}
+
 export const GraphDataContext = createContext<DataContextType | undefined>(
   undefined
 );
 
 export const GraphHoverContext = createContext<HoverContextType | undefined>(
+  undefined
+);
+export const GraphAnnotationContext = createContext<
+  AnnotationContextType | undefined
+>(undefined);
+
+export const GraphFilterContext = createContext<FilterContextType | undefined>(
   undefined
 );
 
@@ -46,20 +71,16 @@ export const useGraphHover = () => {
   return context;
 };
 
-export interface AnnotationContextType {
-  annotations: GraphAnnotation[];
-  addAnnotation: (a: GraphAnnotation) => void;
-  updateAnnotation: (id: string, patch: Partial<GraphAnnotation>) => void;
-  removeAnnotation: (id: string) => void;
-}
-
-export const GraphAnnotationContext = createContext<
-  AnnotationContextType | undefined
->(undefined);
-
-export const useGraphAnnotations = () => {
+export const useGraphAnnotation = () => {
   const context = useContext(GraphAnnotationContext);
   if (!context)
-    throw new Error("useGraphAnnotations must be used within a GraphProvider");
+    throw new Error("useGraphAnnotation must be used within a GraphProvider");
+  return context;
+};
+
+export const useGraphFilter = () => {
+  const context = useContext(GraphFilterContext);
+  if (!context)
+    throw new Error("useGraphFilter must be used within a GraphProvider");
   return context;
 };
