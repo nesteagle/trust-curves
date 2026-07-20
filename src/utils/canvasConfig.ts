@@ -10,7 +10,7 @@ export const CONFIG = {
   MARGIN: { top: 20, right: 30, bottom: 45, left: 55 },
   TICK_SPACING: 120,
   X_PAD_RATIO: 0.05,
-  HOVER_RADIUS: 10,
+  HOVER_RADIUS: 12,
   TIME: {
     GAP_THRESHOLD_MS: 6 * 60 * 60 * 1000, // 6 hour + gaps are collapsed
     COLLAPSED_SPACE_MS: 0.25 * 60 * 60 * 1000, // collapsed space takes 1/4 hour or 15 minutes
@@ -66,11 +66,10 @@ export const CONFIG = {
     TETHER: (opacity: number) => `rgba(180, 50, 50, ${opacity})`,
   },
   ANNOTATION: {
-    HIT_RADIUS: 4,
+    HIT_RADIUS: 3,
     VIEWPORT_PADDING: 50,
     LABEL_LANE_HEIGHT: 24,
     ANNOTATION_FONT:
       "600 12px ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif",
   },
 };
-

@@ -4,7 +4,6 @@ export const dateFormatter = new Intl.DateTimeFormat("en-US", {
   hour: "2-digit",
   minute: "2-digit",
   second: "2-digit",
-  timeZoneName: "short",
 });
 
 export const timeFormatter = new Intl.DateTimeFormat("en-US", {

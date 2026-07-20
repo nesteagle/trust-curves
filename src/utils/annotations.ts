@@ -14,7 +14,7 @@ export const DEFAULT_ANNOTATIONS: GraphAnnotation[] = [
   },
   {
     id: "ann-3",
-    timestamp: getMs("2046-06-05T11:51:00"),
+    timestamp: getMs("2046-06-05T11:43:00"),
     label: "3. Social-Media, Legal begin preparing early release",
   },
   {

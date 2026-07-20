@@ -55,7 +55,7 @@ export const ThreadPanel: React.FC<ThreadPanelProps> = ({
         />
       )}
 
-      <aside className="flex flex-col h-full z-40 w-[900px] border-l bg-white shadow-2xl border-slate-200 font-sans text-slate-800">
+      <aside className="flex flex-col h-full z-40 w-[40vw] border-l bg-white shadow-2xl border-slate-200 font-sans text-slate-800">
         <header className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b backdrop-blur-sm border-slate-200 bg-slate-50/80">
           <div className="flex items-center space-x-3">
             <div>
