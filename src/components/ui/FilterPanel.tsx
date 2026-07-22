@@ -1,11 +1,7 @@
 import { useGraphFilter } from "../../store/GraphContext";
 import type { Visibility } from "../../types";
 
-const OPTIONS: { value: Visibility; label: string }[] = [
-  { value: "private", label: "Private" },
-  { value: "internal", label: "Internal" },
-  { value: "post", label: "Public" },
-];
+import { VISIBILITY_LABELS, VISIBILITY_VALUES } from "../../utils/visibilityLabels";
 
 export const FilterPanel: React.FC = () => {
   const { filterState, setFilterState } = useGraphFilter();
@@ -13,19 +9,19 @@ export const FilterPanel: React.FC = () => {
 
   const toggle = (value: Visibility) => {
     setFilterState((prev) => {
-      const next = new Set(prev.visibility ?? OPTIONS.map((o) => o.value));
+      const next = new Set(prev.visibility ?? VISIBILITY_VALUES);
       if (next.has(value)) next.delete(value);
       else next.add(value);
       return {
         ...prev,
-        visibility: next.size === OPTIONS.length ? null : next,
+        visibility: next.size === VISIBILITY_VALUES.length ? null : next,
       };
     });
   };
 
   return (
     <div className="flex items-center gap-1">
-      {OPTIONS.map(({ value, label }) => {
+      {VISIBILITY_VALUES.map((value) => {
         const active = visibility === null || visibility.has(value);
         return (
           <button
@@ -43,7 +39,7 @@ export const FilterPanel: React.FC = () => {
                 active ? "ti ti-square-check" : "ti ti-square"
               } text-sm`}
             />
-            {label}
+            {VISIBILITY_LABELS[value]}
           </button>
         );
       })}

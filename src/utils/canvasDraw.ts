@@ -34,34 +34,9 @@ export const drawTimeGaps = (
   timeCompression.gaps.forEach((g) => {
     const x1 = currentX(timeCompression.toSim(g.start));
     const x2 = currentX(timeCompression.toSim(g.end));
-
     if (x2 > 0 && x1 < innerWidth) {
       ctx.fillStyle = CONFIG.COLOR.TIME_GAP_FILL;
       ctx.fillRect(x1, 0, x2 - x1, innerHeight);
-
-      const midX = (x1 + x2) / 2;
-      const amplitude = 4;
-      const wavelength = 16;
-
-      ctx.beginPath();
-      ctx.setLineDash([]);
-
-      ctx.moveTo(midX, 0);
-
-      for (let y = 0; y < innerHeight; y += wavelength) {
-        const nextY = Math.min(y + wavelength, innerHeight);
-
-        const controlY = y + (nextY - y) / 2;
-        const direction = (y / wavelength) % 2 === 0 ? 1 : -1;
-        const targetX = midX + amplitude * direction;
-
-        ctx.lineTo(targetX, controlY);
-        ctx.lineTo(midX, nextY);
-      }
-
-      ctx.strokeStyle = CONFIG.COLOR.TIME_GAP_LINE;
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
     }
   });
 

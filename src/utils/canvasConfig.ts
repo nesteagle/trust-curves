@@ -7,7 +7,7 @@ export const bisectTime = d3.bisector<NodeData, number>((d) =>
 ).left;
 
 export const CONFIG = {
-  MARGIN: { top: 20, right: 30, bottom: 45, left: 55 },
+  MARGIN: { top: 20, right: 30, bottom: 60, left: 65 },
   TICK_SPACING: 120,
   X_PAD_RATIO: 0.05,
   HOVER_RADIUS: 12,
@@ -58,7 +58,7 @@ export const CONFIG = {
     TETHER: 1.5,
   },
   COLOR: {
-    TIME_GAP_FILL: "rgba(0, 0, 0, 0.02)",
+    TIME_GAP_FILL: "rgba(0, 0, 0, 0.04)",
     TIME_GAP_LINE: "rgba(0, 0, 0, 0.08)",
     ANNOTATION_LINE: "rgba(100, 116, 139, 0.6)",
     MIDPOINT_LINE: "rgba(100, 116, 139, 0.2)",

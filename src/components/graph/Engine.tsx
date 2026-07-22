@@ -438,20 +438,20 @@ export const CanvasEngine: React.FC<CanvasEngineProps> = ({
         />
         <text
           x={CONFIG.MARGIN.left + innerWidth / 2}
-          y={height - 10}
+          y={height - 15}
           fill="currentColor"
           textAnchor="middle"
-          className="text-slate-600 font-medium"
+          className="text-slate-600 font-medium text-base"
         >
           Timeline
         </text>
         <text
           x={-(CONFIG.MARGIN.top + innerHeight / 2)}
-          y={20}
+          y={25}
           fill="currentColor"
           textAnchor="middle"
           transform="rotate(-90)"
-          className="text-slate-600 font-medium"
+          className="text-slate-600 font-medium text-base"
         >
           Alignment Score
         </text>

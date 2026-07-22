@@ -5,6 +5,7 @@ import { CollapsibleText } from "../ui/CollapsibleText";
 import { ScoreBadge } from "./Audit";
 import { WindRose } from "../charts/WindRose";
 import type { DAGNode } from "../../hooks/useGraphNetwork";
+import { VISIBILITY_LABELS } from "../../utils/visibilityLabels";
 
 interface ThreadMessageProps {
   node: DAGNode;
@@ -77,8 +78,18 @@ export const ThreadMessage: React.FC<ThreadMessageProps> = ({
 
       <div className="flex-1 min-w-0 pt-0.5">
         <div className="flex items-baseline justify-between mb-2">
-          <span className="text-sm font-bold text-slate-900">{node.agent}</span>
-          <time className="text-[11px] font-medium text-slate-400">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-sm font-bold text-slate-900">
+              {node.agent}
+            </span>
+            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500 whitespace-nowrap">
+              {VISIBILITY_LABELS[node.visibility]}
+            </span>
+            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500 whitespace-nowrap">
+              {node.channel}
+            </span>
+          </div>
+          <time className="text-[11px] font-medium text-slate-400 flex-shrink-0 ml-2">
             {timeFormatter.format(new Date(node.timestamp))}
           </time>
         </div>
