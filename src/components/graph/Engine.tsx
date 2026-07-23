@@ -18,6 +18,7 @@ import {
   drawEdges,
   drawNodes,
   drawAnnotations,
+  zoomProgress,
 } from "../../utils/canvasDraw";
 import { useAnnotationHitTest } from "../../hooks/useAnnotationHitTest";
 import { getNodesInView } from "../../hooks/useInView";
@@ -218,21 +219,18 @@ export const CanvasEngine: React.FC<CanvasEngineProps> = ({
     const spotlight = { isSpotlighting, highlightNodeId, highlightThreadId };
     const k = transform.k;
 
-    const baseNodeOpacity = Math.max(
-      CONFIG.OPACITY.NODE_BASE_MIN,
-      Math.min(
-        CONFIG.OPACITY.NODE_BASE_MAX,
-        CONFIG.OPACITY.NODE_BASE_MIN +
-          (k - CONFIG.ZOOM.NODE_FADE_START) * CONFIG.OPACITY.NODE_BASE_FADE_RATE
-      )
+    const nodeT = d3.easeCubicOut(
+      zoomProgress(k, CONFIG.ZOOM.NODE_FADE_START, CONFIG.ZOOM.MID_DETAIL)
     );
-    const baseEdgeOpacity = Math.max(
-      CONFIG.OPACITY.EDGE_BASE_MIN,
-      Math.min(
-        CONFIG.OPACITY.EDGE_BASE_MAX,
-        (k - CONFIG.ZOOM.EDGE_FADE_START) * CONFIG.OPACITY.EDGE_BASE_FADE_RATE
-      )
-    );
+    const nodeOpacity =
+      CONFIG.OPACITY.NODE_BASE_MIN +
+      nodeT * (CONFIG.OPACITY.NODE_BASE_MAX - CONFIG.OPACITY.NODE_BASE_MIN);
+    const edgeOpacity =
+      CONFIG.OPACITY.EDGE_BASE_MIN +
+      nodeT * (CONFIG.OPACITY.EDGE_BASE_MAX - CONFIG.OPACITY.EDGE_BASE_MIN);
+    const trendOpacity =
+      CONFIG.OPACITY.TREND_MIN +
+      (1 - nodeT) * (CONFIG.OPACITY.TREND_MAX - CONFIG.OPACITY.TREND_MIN);
 
     drawTimeGaps(ctx, timeCompression, currentX, innerWidth, innerHeight);
     drawTrendLines(
@@ -241,24 +239,21 @@ export const CanvasEngine: React.FC<CanvasEngineProps> = ({
       baseScales,
       timeCompression,
       transform,
-      k,
+      trendOpacity,
       isSpotlighting
     );
 
-    if (baseEdgeOpacity > 0 || isSpotlighting) {
-      drawEdges(
-        ctx,
-        edges,
-        nodeMap,
-        getX,
-        getY,
-        getExternalScoreOrZero,
-        innerWidth,
-        spotlight,
-        baseEdgeOpacity
-      );
-    }
-
+    drawEdges(
+      ctx,
+      edges,
+      nodeMap,
+      getX,
+      getY,
+      getExternalScoreOrZero,
+      innerWidth,
+      spotlight,
+      edgeOpacity
+    );
     drawNodes(
       ctx,
       visibleNodes,
@@ -266,10 +261,9 @@ export const CanvasEngine: React.FC<CanvasEngineProps> = ({
       getY,
       getExternalScoreOrZero,
       scoresInternal,
-      k,
       spotlight,
       sidebarHoveredId,
-      baseNodeOpacity
+      nodeOpacity
     );
 
     drawAnnotations(ctx, annotations, getX, innerWidth, innerHeight);
@@ -301,6 +295,7 @@ export const CanvasEngine: React.FC<CanvasEngineProps> = ({
     const zoom = d3
       .zoom<HTMLCanvasElement, unknown>()
       .scaleExtent([1, CONFIG.ZOOM.MAX_SCALE])
+      .wheelDelta((event) => -event.deltaY * (event.deltaMode ? 0.05 : 0.002))
       .on("zoom", (event) => {
         transformRef.current = event.transform;
         renderAxes(event.transform);

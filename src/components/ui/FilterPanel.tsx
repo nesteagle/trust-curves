@@ -1,7 +1,10 @@
 import { useGraphFilter } from "../../store/GraphContext";
 import type { Visibility } from "../../types";
 
-import { VISIBILITY_LABELS, VISIBILITY_VALUES } from "../../utils/visibilityLabels";
+import {
+  VISIBILITY_LABELS,
+  VISIBILITY_VALUES,
+} from "../../utils/visibilityLabels";
 
 export const FilterPanel: React.FC = () => {
   const { filterState, setFilterState } = useGraphFilter();
@@ -30,8 +33,8 @@ export const FilterPanel: React.FC = () => {
             aria-pressed={active}
             className={`flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded border transition-colors cursor-pointer ${
               active
-                ? "border-gray-300 bg-gray-50/90 text-slate-600"
-                : "border-gray-200 bg-white/90 text-gray-300"
+                ? "border-gray-300 bg-gray-50 text-slate-600"
+                : "border-gray-200 bg-white text-gray-300"
             }`}
           >
             <i

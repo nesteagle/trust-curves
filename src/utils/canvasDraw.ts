@@ -43,6 +43,9 @@ export const drawTimeGaps = (
   ctx.restore();
 };
 
+export const zoomProgress = (k: number, start: number, end: number): number =>
+  Math.max(0, Math.min(1, (k - start) / (end - start)));
+
 export const drawTrendLines = (
   ctx: CanvasRenderingContext2D,
   trends: Record<string, TrendPoint[]>,
@@ -52,11 +55,9 @@ export const drawTrendLines = (
   },
   timeCompression: TimeCompression,
   transform: d3.ZoomTransform,
-  k: number,
+  opacity: number,
   isSpotlighting: boolean
 ) => {
-  if (k >= CONFIG.ZOOM.MID_DETAIL) return;
-
   const line = d3
     .line<TrendPoint>()
     .defined(() => true)
@@ -71,13 +72,9 @@ export const drawTrendLines = (
     ctx.beginPath();
     line.context(ctx)(points);
     ctx.strokeStyle = colorScale(agent);
-    const trendOpacity = Math.max(
-      CONFIG.OPACITY.TREND_MIN,
-      CONFIG.OPACITY.TREND_MAX - k / CONFIG.ZOOM.MID_DETAIL
-    );
     ctx.globalAlpha = isSpotlighting
-      ? trendOpacity * CONFIG.OPACITY.TREND_MUTED_SCALE
-      : trendOpacity;
+      ? opacity * CONFIG.OPACITY.TREND_MUTED_SCALE
+      : opacity;
     ctx.lineWidth = CONFIG.LINE_WIDTH.TREND;
     ctx.stroke();
   });
@@ -165,10 +162,9 @@ export const drawNodes = (
   getY: (score: number) => number,
   getExternalScoreOrZero: (nodeId: string) => number,
   scoresInternal: Map<string, number | null>,
-  k: number,
   spotlight: SpotlightState,
   sidebarHoveredId: string | null,
-  baseNodeOpacity: number
+  opacity: number
 ) => {
   ctx.save();
   visibleNodes.forEach((node) => {
@@ -176,10 +172,10 @@ export const drawNodes = (
 
     const cx = getX(node.timestamp);
     const cy = getY(externalScore);
-    const radius =
-      k < CONFIG.ZOOM.NODE_SMALL
-        ? CONFIG.RADIUS.MIN
-        : Math.min(CONFIG.RADIUS.MAX, k * CONFIG.RADIUS.SCALE);
+    const radius = Math.max(
+      CONFIG.RADIUS.MIN,
+      Math.min(CONFIG.RADIUS.MAX, opacity * CONFIG.RADIUS.MAX)
+    );
 
     const isNodeActive =
       spotlight.isSpotlighting &&
@@ -188,23 +184,14 @@ export const drawNodes = (
         : node.id === spotlight.highlightNodeId);
     const isSidebarHovered = sidebarHoveredId === node.id;
 
-    const finalOpacity = getSpotlightOpacity(
-      spotlight,
-      isNodeActive,
-      baseNodeOpacity
-    );
+    const finalOpacity = getSpotlightOpacity(spotlight, isNodeActive, opacity);
     const internalScore = scoresInternal.get(node.id);
 
-    if (k >= CONFIG.ZOOM.TETHER_VISIBLE && internalScore != null) {
+    if (internalScore != null) {
       ctx.save();
-      let tetherOpacity = Math.min(
-        CONFIG.OPACITY.TETHER_MAX,
-        (k - CONFIG.ZOOM.TETHER_FADE_START) * CONFIG.OPACITY.TETHER_FADE_RATE
-      );
+      let tetherOpacity = opacity * CONFIG.OPACITY.TETHER_ACTIVE;
       if (spotlight.isSpotlighting) {
-        tetherOpacity = isNodeActive
-          ? CONFIG.OPACITY.TETHER_ACTIVE
-          : tetherOpacity * CONFIG.OPACITY.TETHER_MUTED_SCALE;
+        if (isNodeActive) tetherOpacity = CONFIG.OPACITY.TETHER_ACTIVE;
       }
 
       ctx.beginPath();
@@ -235,9 +222,7 @@ export const drawNodes = (
       ? CONFIG.LINE_WIDTH.NODE_HOVER
       : spotlight.isSpotlighting && isNodeActive
       ? CONFIG.LINE_WIDTH.NODE_ACTIVE
-      : k < CONFIG.ZOOM.NODE_SMALL
-      ? CONFIG.LINE_WIDTH.NODE_TINY
-      : CONFIG.LINE_WIDTH.NODE_BASE;
+      : CONFIG.LINE_WIDTH.NODE_TINY;
     ctx.stroke();
   });
   ctx.restore();
